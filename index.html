@@ -1,0 +1,67 @@
+from datetime import datetime
+
+def log_progress(message):
+    with open("code_log.txt", "a") as log_file:
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        log_file.write(f"{timestamp} - {message}\n")
+
+
+
+import requests
+from bs4 import BeautifulSoup
+
+def extract():
+    url = "https://en.wikipedia.org/wiki/List_of_largest_banks"
+    html_page = requests.get(url).text
+    data = BeautifulSoup(html_page, "html.parser")
+    table = data.find_all("table")[1]
+    rows = table.find_all("tr")
+    
+    extracted_data = []
+    for row in rows[1:11]:
+        col = row.find_all('td')
+        bank_name = col[1].find_all('a')[1]['title']
+        market_cap = float(col[2].contents[0][:-1])
+        extracted_data.append([bank_name, market_cap])
+    return extracted_data
+
+
+
+import pandas as pd
+import numpy as np
+
+def transform(data):
+    df = pd.DataFrame(data, columns=["Bank Name", "MC_USD_Billion"])
+    exchange_rate = {'GBP': 0.8, 'EUR': 0.9}
+    
+    df["MC_GBP_Billion"] = [np.round(x * exchange_rate['GBP'], 0) for x in df["MC_USD_Billion"]]
+    df["MC_EUR_Billion"] = [np.round(x * exchange_rate['EUR'], 0) for x in df["MC_USD_Billion"]]
+    
+    return df
+
+
+
+
+import pandas as pd
+import numpy as np
+
+
+
+
+def transform(data):
+    df = pd.DataFrame(data, columns=["Bank Name", "MC_USD_Billion"])
+    exchange_rate = {'GBP': 0.8, 'EUR': 0.9}
+    
+    df["MC_GBP_Billion"] = [np.round(x * exchange_rate['GBP'], 0) for x in df["MC_USD_Billion"]]
+    df["MC_EUR_Billion"] = [np.round(x * exchange_rate['EUR'], 0) for x in df["MC_USD_Billion"]]
+    
+    return df
+
+def load_to_csv(df, filename):
+    df.to_csv(filename, index=False)
+
+import sqlite3
+
+def load_to_db(df, db_name, table_name):
+    conn = sqlite3.connect(db_name)
+    df.to_sql(table
